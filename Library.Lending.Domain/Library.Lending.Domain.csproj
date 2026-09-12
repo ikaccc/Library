@@ -4,4 +4,11 @@
     <Description>Lending domain model: aggregates, value objects and business rules.</Description>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Folder Include="Books/" />
+    <Folder Include="Borrowers/" />
+    <Folder Include="Common/" />
+    <Folder Include="Loans/" />
+  </ItemGroup>
+
 </Project>

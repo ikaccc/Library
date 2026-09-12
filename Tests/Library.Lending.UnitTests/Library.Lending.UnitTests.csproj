@@ -1,3 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
+  <ItemGroup>
+    <Folder Include="Domain/" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../Library.Lending.Domain/Library.Lending.Domain.csproj" />
+  </ItemGroup>
 </Project>
