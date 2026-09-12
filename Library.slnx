@@ -10,6 +10,7 @@
     <Project Path="Tests/Library.ArchitectureTests/Library.ArchitectureTests.csproj" />
     <Project Path="Tests/Library.Lending.IntegrationTests/Library.Lending.IntegrationTests.csproj" />
     <Project Path="Tests/Library.Lending.UnitTests/Library.Lending.UnitTests.csproj" />
+    <Project Path="Tests/Library.TestSupport/Library.TestSupport.csproj" />
     <Project Path="Tests/Library.Warmup.Tests/Library.Warmup.Tests.csproj" />
   </Folder>
 </Solution>

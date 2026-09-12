@@ -1,3 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="../../Library.Lending.Infrastructure/Library.Lending.Infrastructure.csproj" />
+    <ProjectReference Include="../Library.TestSupport/Library.TestSupport.csproj" />
+  </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
+  </ItemGroup>
 </Project>

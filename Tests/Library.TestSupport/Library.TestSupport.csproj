@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <IsTestProject>false</IsTestProject>
+    <Description>Shared test infrastructure: PostgreSQL test container, gRPC host factory and data builders.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+    <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
+    <PackageReference Include="Testcontainers.PostgreSql" />
+    <PackageReference Include="xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../Library.Lending.Contracts/Library.Lending.Contracts.csproj" />
+    <ProjectReference Include="../../Library.Lending.Grpc/Library.Lending.Grpc.csproj" />
+    <ProjectReference Include="../../Library.Lending.Infrastructure/Library.Lending.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>
