@@ -4,4 +4,32 @@
     <Description>EF Core persistence for PostgreSQL: DbContext, migrations, repositories, analytics queries and sample data seeding.</Description>
   </PropertyGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Library.Lending.IntegrationTests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Persistence/Migrations/" />
+    <Folder Include="Persistence/Repositories/" />
+    <Folder Include="Persistence/Analytics/" />
+    <Folder Include="Seeding/" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="EFCore.NamingConventions" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../Library.Lending.Application/Library.Lending.Application.csproj" />
+    <ProjectReference Include="../Library.Lending.Domain/Library.Lending.Domain.csproj" />
+  </ItemGroup>
+
 </Project>
