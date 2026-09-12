@@ -6,11 +6,30 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Google.Api.CommonProtos" />
     <PackageReference Include="Grpc.AspNetCore" />
+    <PackageReference Include="Grpc.AspNetCore.HealthChecks" />
+    <PackageReference Include="Grpc.StatusProto" />
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" />
+    <PackageReference Include="Npgsql.OpenTelemetry" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Http" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" />
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Errors/" />
+    <Folder Include="Interceptors/" />
+    <Folder Include="Mapping/" />
     <Folder Include="Services/" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../Library.Lending.Application/Library.Lending.Application.csproj" />
+    <ProjectReference Include="../Library.Lending.Contracts/Library.Lending.Contracts.csproj" />
+    <ProjectReference Include="../Library.Lending.Infrastructure/Library.Lending.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

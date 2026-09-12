@@ -1,0 +1,59 @@
+syntax = "proto3";
+
+package library.lending.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option csharp_namespace = "Library.Lending.Contracts.V1";
+
+service LoansService {
+  rpc BorrowBook(BorrowBookRequest) returns (Loan);
+  rpc ReturnBook(ReturnBookRequest) returns (Loan);
+  rpc GetLoan(GetLoanRequest) returns (Loan);
+  rpc ListLoans(ListLoansRequest) returns (ListLoansResponse);
+}
+
+enum LoanStatus {
+  LOAN_STATUS_UNSPECIFIED = 0;
+  LOAN_STATUS_OPEN = 1;
+  LOAN_STATUS_OVERDUE = 2;
+  LOAN_STATUS_RETURNED = 3;
+}
+
+message Loan {
+  string id = 1;
+  string book_id = 2;
+  string borrower_id = 3;
+  google.protobuf.Timestamp borrowed_at = 4;
+  google.protobuf.Timestamp due_at = 5;
+  google.protobuf.Timestamp returned_at = 6;
+  LoanStatus status = 7;
+}
+
+message BorrowBookRequest {
+  string book_id = 1;
+  string borrower_id = 2;
+}
+
+message ReturnBookRequest {
+  string loan_id = 1;
+}
+
+message GetLoanRequest {
+  string id = 1;
+}
+
+message ListLoansRequest {
+  optional string book_id = 1;
+  optional string borrower_id = 2;
+  LoanStatus status = 3;
+  int32 page = 4;
+  int32 page_size = 5;
+}
+
+message ListLoansResponse {
+  repeated Loan loans = 1;
+  int32 page = 2;
+  int32 page_size = 3;
+  int32 total_count = 4;
+}

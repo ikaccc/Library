@@ -1,0 +1,92 @@
+syntax = "proto3";
+
+package library.lending.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option csharp_namespace = "Library.Lending.Contracts.V1";
+
+service AnalyticsService {
+  rpc GetMostBorrowedBooks(GetMostBorrowedBooksRequest) returns (GetMostBorrowedBooksResponse);
+  rpc GetTopBorrowers(GetTopBorrowersRequest) returns (GetTopBorrowersResponse);
+  rpc GetReadingPace(GetReadingPaceRequest) returns (GetReadingPaceResponse);
+  rpc GetAlsoBorrowedBooks(GetAlsoBorrowedBooksRequest) returns (GetAlsoBorrowedBooksResponse);
+}
+
+message TimeRange {
+  google.protobuf.Timestamp from = 1;
+  google.protobuf.Timestamp to = 2;
+}
+
+message GetMostBorrowedBooksRequest {
+  TimeRange range = 1;
+  int32 top = 2;
+}
+
+message MostBorrowedBook {
+  string book_id = 1;
+  string title = 2;
+  string author = 3;
+  int32 borrow_count = 4;
+  int32 unique_borrower_count = 5;
+}
+
+message GetMostBorrowedBooksResponse {
+  repeated MostBorrowedBook books = 1;
+}
+
+message GetTopBorrowersRequest {
+  TimeRange range = 1;
+  int32 top = 2;
+}
+
+message TopBorrower {
+  string borrower_id = 1;
+  string full_name = 2;
+  int32 loan_count = 3;
+  int32 unique_book_count = 4;
+}
+
+message GetTopBorrowersResponse {
+  repeated TopBorrower borrowers = 1;
+}
+
+message GetReadingPaceRequest {
+  string borrower_id = 1;
+}
+
+message LoanReadingPace {
+  string loan_id = 1;
+  string book_id = 2;
+  string title = 3;
+  int32 page_count = 4;
+  google.protobuf.Timestamp borrowed_at = 5;
+  google.protobuf.Timestamp returned_at = 6;
+  double days = 7;
+  double pages_per_day = 8;
+}
+
+message GetReadingPaceResponse {
+  string borrower_id = 1;
+  string full_name = 2;
+  int32 loans_considered = 3;
+  optional double pages_per_day = 4;
+  repeated LoanReadingPace loans = 5;
+}
+
+message GetAlsoBorrowedBooksRequest {
+  string book_id = 1;
+  int32 top = 2;
+}
+
+message AlsoBorrowedBook {
+  string book_id = 1;
+  string title = 2;
+  string author = 3;
+  int32 co_borrower_count = 4;
+  int32 loan_count = 5;
+}
+
+message GetAlsoBorrowedBooksResponse {
+  repeated AlsoBorrowedBook books = 1;
+}

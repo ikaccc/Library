@@ -3,4 +3,22 @@
   <PropertyGroup>
     <Description>gRPC contract of the Lending service (package library.lending.v1). Generates both the client stubs consumed by callers and the server base classes implemented by the service.</Description>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Protobuf Include="Protos/**/*.proto" ProtoRoot="Protos" GrpcServices="Both" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Protos/" />
+    <Folder Include="Protos/v1/" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Google.Protobuf" />
+    <PackageReference Include="Grpc.Net.Client" />
+    <PackageReference Include="Grpc.Tools">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
 </Project>
