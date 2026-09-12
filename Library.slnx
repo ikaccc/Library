@@ -1,0 +1,14 @@
+<Solution>
+  <Project Path="Library.Api/Library.Api.csproj" />
+  <Project Path="Library.Lending.Application/Library.Lending.Application.csproj" />
+  <Project Path="Library.Lending.Contracts/Library.Lending.Contracts.csproj" />
+  <Project Path="Library.Lending.Domain/Library.Lending.Domain.csproj" />
+  <Project Path="Library.Lending.Grpc/Library.Lending.Grpc.csproj" />
+  <Project Path="Library.Lending.Infrastructure/Library.Lending.Infrastructure.csproj" />
+  <Project Path="Library.Warmup/Library.Warmup.csproj" />
+  <Folder Name="/Tests/">
+    <Project Path="Tests/Library.ArchitectureTests/Library.ArchitectureTests.csproj" />
+    <Project Path="Tests/Library.Lending.IntegrationTests/Library.Lending.IntegrationTests.csproj" />
+    <Project Path="Tests/Library.Lending.UnitTests/Library.Lending.UnitTests.csproj" />
+  </Folder>
+</Solution>

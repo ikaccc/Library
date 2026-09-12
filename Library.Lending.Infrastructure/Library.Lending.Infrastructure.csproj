@@ -1,0 +1,7 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>EF Core persistence for PostgreSQL: DbContext, migrations, repositories, analytics queries and sample data seeding.</Description>
+  </PropertyGroup>
+
+</Project>

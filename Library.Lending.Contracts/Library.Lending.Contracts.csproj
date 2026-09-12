@@ -1,0 +1,6 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>gRPC contract of the Lending service (package library.lending.v1). Generates both the client stubs consumed by callers and the server base classes implemented by the service.</Description>
+  </PropertyGroup>
+</Project>

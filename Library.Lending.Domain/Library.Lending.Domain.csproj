@@ -1,0 +1,7 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Lending domain model: aggregates, value objects and business rules.</Description>
+  </PropertyGroup>
+
+</Project>
