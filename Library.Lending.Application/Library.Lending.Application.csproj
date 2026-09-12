@@ -4,4 +4,33 @@
     <Description>Use cases (commands and queries), validation and the ports the infrastructure implements.</Description>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Folder Include="Abstractions/" />
+    <Folder Include="Abstractions/Analytics/" />
+    <Folder Include="Abstractions/Messaging/" />
+    <Folder Include="Abstractions/Persistence/" />
+    <Folder Include="Analytics/" />
+    <Folder Include="Books/" />
+    <Folder Include="Borrowers/" />
+    <Folder Include="Common/" />
+    <Folder Include="Exceptions/" />
+    <Folder Include="Loans/" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Library.Lending.UnitTests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../Library.Lending.Domain/Library.Lending.Domain.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FluentValidation" />
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Options" />
+    <PackageReference Include="Scrutor" />
+  </ItemGroup>
+
 </Project>
