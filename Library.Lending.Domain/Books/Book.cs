@@ -43,12 +43,7 @@ public sealed class Book : Entity
 
     public static Book Register(string title, string author, Isbn? isbn, int pageCount, int totalCopies, DateTimeOffset now)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(title);
-        ArgumentException.ThrowIfNullOrWhiteSpace(author);
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(title.Length, MaxTitleLength);
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(author.Length, MaxAuthorLength);
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(pageCount);
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(totalCopies);
+        ValidateDetails(title, author, pageCount, totalCopies);
 
         return new Book(title.Trim(), author.Trim(), isbn, pageCount, totalCopies, now);
     }
@@ -72,5 +67,35 @@ public sealed class Book : Entity
         }
 
         AvailableCopies++;
+    }
+
+    public Result Update(string title, string author, Isbn? isbn, int pageCount, int totalCopies)
+    {
+        ValidateDetails(title, author, pageCount, totalCopies);
+
+        var copiesOnLoan = CopiesOnLoan;
+        if (totalCopies < copiesOnLoan)
+        {
+            return BookErrors.TotalCopiesBelowCopiesOnLoan(Id, Title, copiesOnLoan, totalCopies);
+        }
+
+        Title = title.Trim();
+        Author = author.Trim();
+        Isbn = isbn;
+        PageCount = pageCount;
+        TotalCopies = totalCopies;
+        AvailableCopies = totalCopies - copiesOnLoan;
+
+        return Result.Success();
+    }
+    
+    private static void ValidateDetails(string title, string author, int pageCount, int totalCopies)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(title);
+        ArgumentException.ThrowIfNullOrWhiteSpace(author);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(title.Length, MaxTitleLength);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(author.Length, MaxAuthorLength);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(pageCount);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(totalCopies);
     }
 }

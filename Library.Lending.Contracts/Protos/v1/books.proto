@@ -3,6 +3,7 @@ syntax = "proto3";
 package library.lending.v1;
 
 import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
 
 option csharp_namespace = "Library.Lending.Contracts.V1";
 
@@ -10,6 +11,8 @@ service BooksService {
   rpc RegisterBook(RegisterBookRequest) returns (Book);
   rpc GetBook(GetBookRequest) returns (Book);
   rpc ListBooks(ListBooksRequest) returns (ListBooksResponse);
+  rpc UpdateBook(UpdateBookRequest) returns (Book);
+  rpc DeleteBook(DeleteBookRequest) returns (google.protobuf.Empty);
 }
 
 message Book {
@@ -32,6 +35,19 @@ message RegisterBookRequest {
 }
 
 message GetBookRequest {
+  string id = 1;
+}
+
+message UpdateBookRequest {
+  string id = 1;
+  string title = 2;
+  string author = 3;
+  optional string isbn = 4;
+  int32 page_count = 5;
+  int32 total_copies = 6;
+}
+
+message DeleteBookRequest {
   string id = 1;
 }
 

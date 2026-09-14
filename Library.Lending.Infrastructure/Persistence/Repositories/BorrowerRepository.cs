@@ -20,4 +20,5 @@ internal sealed class BorrowerRepository(LendingDbContext db) : IBorrowerReposit
             .ToPagedResultAsync(page, pageSize, cancellationToken);
 
     public void Add(Borrower borrower) => db.Borrowers.Add(borrower);
+    public void Remove(Borrower borrower) => db.Borrowers.Remove(borrower);
 }

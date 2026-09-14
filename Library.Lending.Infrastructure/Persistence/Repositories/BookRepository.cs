@@ -13,6 +13,10 @@ internal sealed class BookRepository(LendingDbContext db) : IBookRepository
     public Task<bool> ExistsAsync(Guid bookId, CancellationToken cancellationToken) =>
         db.Books.AnyAsync(book => book.Id == bookId, cancellationToken);
 
+    public Task<bool> ExistsWithIsbnAsync(Isbn isbn, Guid? excludingBookId, CancellationToken cancellationToken) =>
+        db.Books.AnyAsync(book => book.Isbn == isbn && (excludingBookId == null || book.Id != excludingBookId), cancellationToken);
+
+
     public Task<bool> ExistsWithIsbnAsync(Isbn isbn, CancellationToken cancellationToken) =>
         db.Books.AnyAsync(book => book.Isbn == isbn, cancellationToken);
 
@@ -35,4 +39,5 @@ internal sealed class BookRepository(LendingDbContext db) : IBookRepository
     }
 
     public void Add(Book book) => db.Books.Add(book);
+    public void Remove(Book book) => db.Books.Remove(book);
 }

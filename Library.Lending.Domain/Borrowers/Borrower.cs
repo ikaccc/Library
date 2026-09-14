@@ -29,15 +29,34 @@ public sealed class Borrower : Entity
 
     public static Borrower Register(string fullName, string? email, DateTimeOffset now)
     {
+        ValidateFullName(fullName);
+
+        return new Borrower(fullName.Trim(), NormalizeEmail(email), now);
+    }
+
+    public void Update(string fullName, string? email)
+    {
+        ValidateFullName(fullName);
+
+        FullName = fullName.Trim();
+        Email = NormalizeEmail(email);
+    }
+
+    private static void ValidateFullName(string fullName)
+    {
         ArgumentException.ThrowIfNullOrWhiteSpace(fullName);
         ArgumentOutOfRangeException.ThrowIfGreaterThan(fullName.Length, MaxFullNameLength);
+    }
 
-        var normalizedEmail = string.IsNullOrWhiteSpace(email) ? null : email.Trim().ToLowerInvariant();
-        if (normalizedEmail is not null)
+    private static string? NormalizeEmail(string? email)
+    {
+        if (string.IsNullOrWhiteSpace(email))
         {
-            ArgumentOutOfRangeException.ThrowIfGreaterThan(normalizedEmail.Length, MaxEmailLength);
+            return null;
         }
 
-        return new Borrower(fullName.Trim(), normalizedEmail, now);
+        var normalized = email.Trim().ToLowerInvariant();
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(normalized.Length, MaxEmailLength);
+        return normalized;
     }
 }

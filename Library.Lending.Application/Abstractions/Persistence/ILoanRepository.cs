@@ -15,5 +15,9 @@ public interface ILoanRepository
     Task<PagedResult<Loan>> ListAsync(LoanFilter filter, int page, int pageSize, CancellationToken cancellationToken);
 
     void Add(Loan loan);
+
+    Task<bool> ExistsForBookAsync(Guid bookId, CancellationToken cancellationToken);
+
+    Task<bool> ExistsForBorrowerAsync(Guid borrowerId, CancellationToken cancellationToken);
 }
 

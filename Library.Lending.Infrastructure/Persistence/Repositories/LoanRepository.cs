@@ -17,6 +17,13 @@ internal sealed class LoanRepository(LendingDbContext db) : ILoanRepository
             .OrderBy(loan => loan.BorrowedAt)
             .ToListAsync(cancellationToken);
 
+    public Task<bool> ExistsForBookAsync(Guid bookId, CancellationToken cancellationToken) =>
+        db.Loans.AnyAsync(loan => loan.BookId == bookId, cancellationToken);
+
+    public Task<bool> ExistsForBorrowerAsync(Guid borrowerId, CancellationToken cancellationToken) =>
+        db.Loans.AnyAsync(loan => loan.BorrowerId == borrowerId, cancellationToken);
+
+
     public Task<PagedResult<Loan>> ListAsync(LoanFilter filter, int page, int pageSize, CancellationToken cancellationToken)
     {
         IQueryable<Loan> query = db.Loans.AsNoTracking();

@@ -8,6 +8,8 @@ using Library.TestSupport;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 
+using Npgsql;
+
 namespace Library.Lending.IntegrationTests;
 
 [Collection(PostgresCollection.Name)]
@@ -166,6 +168,54 @@ public class RepositoryTests(PostgresContainerFixture postgres) : IAsyncLifetime
         pastTheEnd.TotalCount.ShouldBe(5, "an empty page still reports the real total");
         pastTheEnd.TotalPages.ShouldBe(3);
         executedCommands.Count.ShouldBe(2, "only a page past the end pays for a second query");
+    }
+
+    [Fact]
+    public async Task Loan_history_is_visible_per_book_and_per_borrower()
+    {
+        var lentBook = TestData.NewBook("Lent");
+        var untouchedBook = TestData.NewBook("Untouched");
+        var reader = TestData.NewBorrower("Reader");
+        var newcomer = TestData.NewBorrower("Newcomer");
+        var loan = TestData.BorrowAndReturn(lentBook, reader, TestData.Anchor, daysOnLoan: 3);
+
+        await using (var db = _database.CreateContext())
+        {
+            db.Books.AddRange(lentBook, untouchedBook);
+            db.Borrowers.AddRange(reader, newcomer);
+            db.Loans.Add(loan);
+            await db.SaveChangesAsync();
+        }
+
+        await using var context = _database.CreateContext();
+        var loans = new LoanRepository(context);
+
+        (await loans.ExistsForBookAsync(lentBook.Id, CancellationToken.None)).ShouldBeTrue("returned loans are history too");
+        (await loans.ExistsForBookAsync(untouchedBook.Id, CancellationToken.None)).ShouldBeFalse();
+        (await loans.ExistsForBorrowerAsync(reader.Id, CancellationToken.None)).ShouldBeTrue();
+        (await loans.ExistsForBorrowerAsync(newcomer.Id, CancellationToken.None)).ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task The_database_itself_refuses_deleting_a_book_with_loans()
+    {
+        var book = TestData.NewBook();
+        var borrower = TestData.NewBorrower();
+        var loan = TestData.Borrow(book, borrower, TestData.Anchor);
+        await using (var db = _database.CreateContext())
+        {
+            db.Books.Add(book);
+            db.Borrowers.Add(borrower);
+            db.Loans.Add(loan);
+            await db.SaveChangesAsync();
+        }
+
+        await using var deleter = _database.CreateContext();
+        deleter.Books.Remove(await deleter.Books.SingleAsync(b => b.Id == book.Id));
+
+        var exception = await Should.ThrowAsync<DbUpdateException>(() => deleter.SaveChangesAsync());
+
+        exception.InnerException.ShouldBeOfType<PostgresException>().SqlState.ShouldBe(PostgresErrorCodes.RestrictViolation);
     }
 
     /// <summary>Thin wrapper so the test reads like the application code that uses the unit of work.</summary>

@@ -27,7 +27,56 @@ internal static class BooksEndpoints
             .WithSummary("Get one book with its current inventory.")
             .ProducesProblem(StatusCodes.Status404NotFound);
 
+        books.MapPut("/{id:guid}", UpdateBook)
+            .WithName("UpdateBook")
+            .WithSummary("Replace a book's details. The inventory can change, but never below the copies currently on loan.")
+            .ProducesValidationProblem()
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status409Conflict)
+            .ProducesProblem(StatusCodes.Status422UnprocessableEntity);
+
+        books.MapDelete("/{id:guid}", DeleteBook)
+            .WithName("DeleteBook")
+            .WithSummary("Delete a book that was never lent. A book with lending history cannot be deleted.")
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status409Conflict);
+
         return api;
+    }
+
+    private static async Task<Ok<BookResponse>> UpdateBook(
+        Guid id,
+        UpdateBookRequest request,
+        V1.BooksService.BooksServiceClient client,
+        CancellationToken cancellationToken)
+    {
+        var message = new V1.UpdateBookRequest
+        {
+            Id = id.ToString(),
+            Title = request.Title ?? string.Empty,
+            Author = request.Author ?? string.Empty,
+            PageCount = request.PageCount,
+            TotalCopies = request.TotalCopies,
+        };
+        if (request.Isbn is not null)
+        {
+            message.Isbn = request.Isbn;
+        }
+
+        var book = await client.UpdateBookAsync(message, cancellationToken: cancellationToken);
+
+        return TypedResults.Ok(book.ToResponse());
+    }
+
+    private static async Task<NoContent> DeleteBook(
+        Guid id,
+        V1.BooksService.BooksServiceClient client,
+        CancellationToken cancellationToken)
+    {
+        await client.DeleteBookAsync(new V1.DeleteBookRequest { Id = id.ToString() }, cancellationToken: cancellationToken);
+
+        return TypedResults.NoContent();
     }
 
     private static async Task<Created<BookResponse>> RegisterBook(

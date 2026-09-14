@@ -17,6 +17,7 @@ public class RegisterBookHandlerTests
     [Fact]
     public async Task Registers_a_book_with_a_normalized_isbn_and_all_copies_available()
     {
+        _books.Setup(r => r.ExistsWithIsbnAsync(It.Is<Isbn>(i => i.Value == "9780306406157"), null, It.IsAny<CancellationToken>())).ReturnsAsync(false);
         _books.Setup(r => r.ExistsWithIsbnAsync(It.Is<Isbn>(i => i.Value == "9780306406157"), It.IsAny<CancellationToken>())).ReturnsAsync(false);
         _books.Setup(r => r.Add(It.IsAny<Book>()));
         _unitOfWork.Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
@@ -49,7 +50,7 @@ public class RegisterBookHandlerTests
     [Fact]
     public async Task Rejects_a_duplicate_isbn_with_a_conflict()
     {
-        _books.Setup(r => r.ExistsWithIsbnAsync(It.IsAny<Isbn>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
+        _books.Setup(r => r.ExistsWithIsbnAsync(It.IsAny<Isbn>(), null, It.IsAny<CancellationToken>())).ReturnsAsync(true);
 
         var result = await CreateHandler().HandleAsync(new RegisterBookCommand("Dune", "Frank Herbert", "9780306406157", 412, 1), CancellationToken.None);
 

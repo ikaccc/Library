@@ -12,4 +12,6 @@ public interface IBorrowerRepository
     Task<PagedResult<Borrower>> ListAsync(int page, int pageSize, CancellationToken cancellationToken);
 
     void Add(Borrower borrower);
+
+    void Remove(Borrower borrower);
 }

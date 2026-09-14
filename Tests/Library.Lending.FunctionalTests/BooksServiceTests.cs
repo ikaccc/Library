@@ -79,4 +79,67 @@ public class BooksServiceTests(PostgresContainerFixture postgres) : GrpcServiceT
 
         FieldViolationsOf(exception).Keys.ShouldBe(["page_size"]);
     }
+
+  [Fact]
+    public async Task Updating_a_book_replaces_its_details_and_recomputes_the_available_copies()
+    {
+        var book = await RegisterBookAsync("Dune", "F. Herbert", pageCount: 412, copies: 3);
+        await BorrowAsync(book, await RegisterBorrowerAsync("Alice"));
+        await BorrowAsync(book, await RegisterBorrowerAsync("Bob"));
+
+        var updated = await Books.UpdateBookAsync(new UpdateBookRequest
+        {
+            Id = book.Id,
+            Title = "Dune (Deluxe)",
+            Author = "Frank Herbert",
+            Isbn = "978-0-306-40615-7",
+            PageCount = 500,
+            TotalCopies = 5,
+        });
+
+        updated.Title.ShouldBe("Dune (Deluxe)");
+        updated.Isbn.ShouldBe("9780306406157");
+        updated.PageCount.ShouldBe(500);
+        updated.TotalCopies.ShouldBe(5);
+        updated.AvailableCopies.ShouldBe(3, "two copies stay on loan");
+        (await Books.GetBookAsync(new GetBookRequest { Id = book.Id })).ShouldBe(updated);
+
+        var tooFew = await ShouldFailAsync(Books.UpdateBookAsync(new UpdateBookRequest { Id = book.Id, Title = "Dune", Author = "Frank Herbert", PageCount = 500, TotalCopies = 1 }), StatusCode.FailedPrecondition);
+        ReasonOf(tooFew).ShouldBe("BOOK_TOTAL_COPIES_BELOW_COPIES_ON_LOAN");
+    }
+
+    [Fact]
+    public async Task A_book_may_keep_its_own_isbn_but_not_take_another_books()
+    {
+        var first = await RegisterBookAsync("First", isbn: "9780306406157");
+        var second = await RegisterBookAsync("Second");
+
+        var kept = await Books.UpdateBookAsync(new UpdateBookRequest { Id = first.Id, Title = "First, revised", Author = "X", Isbn = "978-0-306-40615-7", PageCount = 10, TotalCopies = 1 });
+        kept.Isbn.ShouldBe("9780306406157");
+
+        var stolen = await ShouldFailAsync(Books.UpdateBookAsync(new UpdateBookRequest { Id = second.Id, Title = "Second", Author = "X", Isbn = "9780306406157", PageCount = 10, TotalCopies = 1 }), StatusCode.AlreadyExists);
+        ReasonOf(stolen).ShouldBe("BOOK_DUPLICATE_ISBN");
+    }
+
+    [Fact]
+    public async Task A_never_lent_book_can_be_deleted_but_lending_history_protects_a_book()
+    {
+        var unused = await RegisterBookAsync("Unused");
+        var lent = await RegisterBookAsync("Lent");
+        var loan = await BorrowAsync(lent, await RegisterBorrowerAsync());
+
+        await Books.DeleteBookAsync(new DeleteBookRequest { Id = unused.Id });
+        var gone = await ShouldFailAsync(Books.GetBookAsync(new GetBookRequest { Id = unused.Id }), StatusCode.NotFound);
+        ReasonOf(gone).ShouldBe("BOOK_NOT_FOUND");
+
+        var protectedWhileOpen = await ShouldFailAsync(Books.DeleteBookAsync(new DeleteBookRequest { Id = lent.Id }), StatusCode.AlreadyExists);
+        ReasonOf(protectedWhileOpen).ShouldBe("BOOK_HAS_LOANS");
+
+        await ReturnAsync(loan);
+        var protectedByHistory = await ShouldFailAsync(Books.DeleteBookAsync(new DeleteBookRequest { Id = lent.Id }), StatusCode.AlreadyExists);
+        ReasonOf(protectedByHistory).ShouldBe("BOOK_HAS_LOANS");
+
+        var unknown = await ShouldFailAsync(Books.DeleteBookAsync(new DeleteBookRequest { Id = Guid.NewGuid().ToString() }), StatusCode.NotFound);
+        ReasonOf(unknown).ShouldBe("BOOK_NOT_FOUND");
+    }
 }

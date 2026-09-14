@@ -26,7 +26,47 @@ internal static class BorrowersEndpoints
             .WithSummary("Get one library member.")
             .ProducesProblem(StatusCodes.Status404NotFound);
 
+        borrowers.MapPut("/{id:guid}", UpdateBorrower)
+            .WithName("UpdateBorrower")
+            .WithSummary("Replace a member's details.")
+            .ProducesValidationProblem()
+            .ProducesProblem(StatusCodes.Status404NotFound);
+
+        borrowers.MapDelete("/{id:guid}", DeleteBorrower)
+            .WithName("DeleteBorrower")
+            .WithSummary("Delete a member who never borrowed. A member with lending history cannot be deleted.")
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status409Conflict);
+
         return api;
+    }
+
+    private static async Task<Ok<BorrowerResponse>> UpdateBorrower(
+        Guid id,
+        UpdateBorrowerRequest request,
+        V1.BorrowersService.BorrowersServiceClient client,
+        CancellationToken cancellationToken)
+    {
+        var message = new V1.UpdateBorrowerRequest { Id = id.ToString(), FullName = request.FullName ?? string.Empty };
+        if (request.Email is not null)
+        {
+            message.Email = request.Email;
+        }
+
+        var borrower = await client.UpdateBorrowerAsync(message, cancellationToken: cancellationToken);
+
+        return TypedResults.Ok(borrower.ToResponse());
+    }
+
+    private static async Task<NoContent> DeleteBorrower(
+        Guid id,
+        V1.BorrowersService.BorrowersServiceClient client,
+        CancellationToken cancellationToken)
+    {
+        await client.DeleteBorrowerAsync(new V1.DeleteBorrowerRequest { Id = id.ToString() }, cancellationToken: cancellationToken);
+
+        return TypedResults.NoContent();
     }
 
     private static async Task<Created<BorrowerResponse>> RegisterBorrower(

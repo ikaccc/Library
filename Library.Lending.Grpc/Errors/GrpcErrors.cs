@@ -74,6 +74,16 @@ public static class GrpcErrors
         _ => StatusCode.Unknown,
     };
 
+    public static void ThrowIfFailure(this Result result)
+    {
+        ArgumentNullException.ThrowIfNull(result);
+
+        if (result.IsFailure)
+        {
+            throw result.Error!.ToRpcException();
+        }
+    }
+
     public static TValue GetValueOrThrow<TValue>(this Result<TValue> result)
     {
         ArgumentNullException.ThrowIfNull(result);

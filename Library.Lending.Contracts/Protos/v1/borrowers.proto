@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package library.lending.v1;
 
+import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 
 option csharp_namespace = "Library.Lending.Contracts.V1";
@@ -10,6 +11,9 @@ service BorrowersService {
   rpc RegisterBorrower(RegisterBorrowerRequest) returns (Borrower);
   rpc GetBorrower(GetBorrowerRequest) returns (Borrower);
   rpc ListBorrowers(ListBorrowersRequest) returns (ListBorrowersResponse);
+  rpc UpdateBorrower(UpdateBorrowerRequest) returns (Borrower);
+  rpc DeleteBorrower(DeleteBorrowerRequest) returns (google.protobuf.Empty);
+
 }
 
 message Borrower {
@@ -25,6 +29,16 @@ message RegisterBorrowerRequest {
 }
 
 message GetBorrowerRequest {
+  string id = 1;
+}
+
+message UpdateBorrowerRequest {
+  string id = 1;
+  string full_name = 2;
+  optional string email = 3;
+}
+
+message DeleteBorrowerRequest {
   string id = 1;
 }
 

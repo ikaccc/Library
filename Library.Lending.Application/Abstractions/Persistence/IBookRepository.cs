@@ -14,4 +14,8 @@ public interface IBookRepository
     Task<PagedResult<Book>> ListAsync(string? search, int page, int pageSize, CancellationToken cancellationToken);
 
     void Add(Book book);
+
+    Task<bool> ExistsWithIsbnAsync(Isbn isbn, Guid? excludingBookId, CancellationToken cancellationToken);
+
+    void Remove(Book book);
 }

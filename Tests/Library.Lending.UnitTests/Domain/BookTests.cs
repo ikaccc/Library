@@ -56,6 +56,60 @@ public class BookTests
     }
 
     [Fact]
+    public void Update_replaces_details_and_keeps_copies_on_loan_out_of_the_available_count()
+    {
+        var book = Book.Register("Dune", "Frank Herbert", null, 412, totalCopies: 3, Now);
+        book.LendCopy();
+        book.LendCopy();
+        var isbn = Isbn.Create("9780306406157").Value;
+
+        var result = book.Update("  Dune (Deluxe) ", " Frank Herbert ", isbn, 500, totalCopies: 5);
+
+        result.IsSuccess.ShouldBeTrue(result.Error?.Message);
+        book.Title.ShouldBe("Dune (Deluxe)");
+        book.Author.ShouldBe("Frank Herbert");
+        book.Isbn.ShouldBe(isbn);
+        book.PageCount.ShouldBe(500);
+        book.TotalCopies.ShouldBe(5);
+        book.CopiesOnLoan.ShouldBe(2);
+        book.AvailableCopies.ShouldBe(3);
+    }
+
+    [Fact]
+    public void Update_can_shrink_the_inventory_down_to_the_copies_on_loan_but_not_below()
+    {
+        var book = Book.Register("Dune", "Frank Herbert", null, 412, totalCopies: 3, Now);
+        book.LendCopy();
+        book.LendCopy();
+
+        var tooFew = book.Update("Dune", "Frank Herbert", null, 412, totalCopies: 1);
+
+        tooFew.IsFailure.ShouldBeTrue();
+        tooFew.Error!.Code.ShouldBe("book.total_copies_below_copies_on_loan");
+        tooFew.Error.Type.ShouldBe(ErrorType.PreconditionFailed);
+        book.TotalCopies.ShouldBe(3);
+        book.AvailableCopies.ShouldBe(1);
+
+        var exactly = book.Update("Dune", "Frank Herbert", null, 412, totalCopies: 2);
+
+        exactly.IsSuccess.ShouldBeTrue();
+        book.TotalCopies.ShouldBe(2);
+        book.AvailableCopies.ShouldBe(0);
+    }
+
+    [Theory]
+    [InlineData("", "Author", 100, 1)]
+    [InlineData("Title", " ", 100, 1)]
+    [InlineData("Title", "Author", 0, 1)]
+    [InlineData("Title", "Author", 100, 0)]
+    public void Update_rejects_invalid_arguments(string title, string author, int pages, int copies)
+    {
+        var book = Book.Register("Dune", "Frank Herbert", null, 412, 1, Now);
+
+        Should.Throw<ArgumentException>(() => book.Update(title, author, null, pages, copies));
+    }
+
+    [Fact]
     public void LendCopy_takes_copies_off_the_shelf_until_none_are_left()
     {
         var book = Book.Register("Title", "Author", null, 100, totalCopies: 2, Now);

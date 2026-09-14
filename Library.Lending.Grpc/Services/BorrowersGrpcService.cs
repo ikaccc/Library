@@ -1,3 +1,5 @@
+using Google.Protobuf.WellKnownTypes;
+
 using Grpc.Core;
 using Library.Lending.Application.Abstractions.Messaging;
 using Library.Lending.Application.Borrowers;
@@ -11,6 +13,8 @@ namespace Library.Lending.Grpc.Services;
 
 public sealed class BorrowersGrpcService(
     ICommandHandler<RegisterBorrowerCommand, Result<BorrowerDto>> registerBorrower,
+    ICommandHandler<UpdateBorrowerCommand, Result<BorrowerDto>> updateBorrower,
+    ICommandHandler<DeleteBorrowerCommand, Result> deleteBorrower,
     IQueryHandler<GetBorrowerQuery, Result<BorrowerDto>> getBorrower,
     IQueryHandler<ListBorrowersQuery, Result<PagedResult<BorrowerDto>>> listBorrowers) : V1.BorrowersService.BorrowersServiceBase
 {
@@ -21,6 +25,28 @@ public sealed class BorrowersGrpcService(
         var result = await registerBorrower.HandleAsync(command, context.CancellationToken);
 
         return result.GetValueOrThrow().ToProto();
+    }
+
+    public override async Task<V1.Borrower> UpdateBorrower(V1.UpdateBorrowerRequest request, ServerCallContext context)
+    {
+        var command = new UpdateBorrowerCommand(
+            RequestMapping.ParseId(request.Id, "id"),
+            request.FullName,
+            RequestMapping.OptionalString(request.HasEmail, request.Email));
+
+        var result = await updateBorrower.HandleAsync(command, context.CancellationToken);
+
+        return result.GetValueOrThrow().ToProto();
+    }
+
+    public override async Task<Empty> DeleteBorrower(V1.DeleteBorrowerRequest request, ServerCallContext context)
+    {
+        var command = new DeleteBorrowerCommand(RequestMapping.ParseId(request.Id, "id"));
+
+        var result = await deleteBorrower.HandleAsync(command, context.CancellationToken);
+        result.ThrowIfFailure();
+
+        return new Empty();
     }
 
     public override async Task<V1.Borrower> GetBorrower(V1.GetBorrowerRequest request, ServerCallContext context)

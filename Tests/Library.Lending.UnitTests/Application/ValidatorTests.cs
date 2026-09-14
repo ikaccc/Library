@@ -41,6 +41,30 @@ public class ValidatorTests
     }
 
     [Fact]
+    public void UpdateBook_requires_an_id_and_shares_the_book_detail_rules_with_RegisterBook()
+    {
+        var result = new UpdateBookValidator().TestValidate(new UpdateBookCommand(Guid.Empty, "", "Author", "bad", 0, 0));
+
+        result.ShouldHaveValidationErrorFor(x => x.BookId);
+        result.ShouldHaveValidationErrorFor(x => x.Title);
+        result.ShouldHaveValidationErrorFor(x => x.Isbn);
+        result.ShouldHaveValidationErrorFor(x => x.PageCount);
+        result.ShouldHaveValidationErrorFor(x => x.TotalCopies);
+
+        new UpdateBookValidator().TestValidate(new UpdateBookCommand(Guid.CreateVersion7(), "Dune", "Frank Herbert", null, 412, 2)).ShouldNotHaveAnyValidationErrors();
+    }
+
+    [Fact]
+    public void Delete_and_update_commands_require_a_real_id()
+    {
+        new DeleteBookValidator().TestValidate(new DeleteBookCommand(Guid.Empty)).ShouldHaveValidationErrorFor(x => x.BookId);
+        new DeleteBorrowerValidator().TestValidate(new DeleteBorrowerCommand(Guid.Empty)).ShouldHaveValidationErrorFor(x => x.BorrowerId);
+        new UpdateBorrowerValidator().TestValidate(new UpdateBorrowerCommand(Guid.Empty, "Ada", null)).ShouldHaveValidationErrorFor(x => x.BorrowerId);
+        new UpdateBorrowerValidator().TestValidate(new UpdateBorrowerCommand(Guid.CreateVersion7(), "Ada", "not-an-email")).ShouldHaveValidationErrorFor(x => x.Email);
+        new UpdateBorrowerValidator().TestValidate(new UpdateBorrowerCommand(Guid.CreateVersion7(), "Ada", "ada@example.com")).ShouldNotHaveAnyValidationErrors();
+    }
+
+    [Fact]
     public void RegisterBorrower_requires_a_name_and_a_well_formed_optional_email()
     {
         var validator = new RegisterBorrowerValidator();

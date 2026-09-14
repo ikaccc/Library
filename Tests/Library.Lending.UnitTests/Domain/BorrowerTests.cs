@@ -33,4 +33,30 @@ public class BorrowerTests
     {
         Should.Throw<ArgumentException>(() => Borrower.Register(name, null, Now));
     }
+
+    [Fact]
+    public void Update_trims_name_and_normalizes_email()
+    {
+        var borrower = Borrower.Register("Ada", null, Now);
+
+        borrower.Update("  Ada Lovelace ", " ADA@Example.com ");
+
+        borrower.FullName.ShouldBe("Ada Lovelace");
+        borrower.Email.ShouldBe("ada@example.com");
+        borrower.JoinedAt.ShouldBe(Now);
+
+        borrower.Update("Ada Lovelace", "   ");
+        borrower.Email.ShouldBeNull();
+    }
+
+    [Fact]
+    public void Update_rejects_blank_name_and_leaves_the_member_untouched()
+    {
+        var borrower = Borrower.Register("Ada", "ada@example.com", Now);
+
+        Should.Throw<ArgumentException>(() => borrower.Update(" ", null));
+
+        borrower.FullName.ShouldBe("Ada");
+        borrower.Email.ShouldBe("ada@example.com");
+    }
 }
