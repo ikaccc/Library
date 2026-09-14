@@ -8,7 +8,10 @@ using Microsoft.Extensions.Time.Testing;
 
 namespace Library.TestSupport;
 
-public sealed class LendingGrpcFactory(string connectionString, FakeTimeProvider? clock = null) : WebApplicationFactory<GrpcEntryPoint>
+public sealed class LendingGrpcFactory(
+    string connectionString,
+    FakeTimeProvider? clock = null,
+    IReadOnlyDictionary<string, string?>? settings = null) : WebApplicationFactory<GrpcEntryPoint>
 {
     public FakeTimeProvider? Clock { get; } = clock;
 
@@ -18,6 +21,10 @@ public sealed class LendingGrpcFactory(string connectionString, FakeTimeProvider
         builder.UseSetting("ConnectionStrings:Lending", connectionString);
         builder.UseSetting("Database:MigrateOnStartup", "true");
         builder.UseSetting("Database:SeedOnStartup", "false");
+        foreach (var (key, value) in settings ?? new Dictionary<string, string?>())
+        {
+            builder.UseSetting(key, value);
+        }
 
         builder.ConfigureTestServices(services =>
         {

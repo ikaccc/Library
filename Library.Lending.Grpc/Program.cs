@@ -19,6 +19,12 @@ builder.Services.AddGrpc(options =>
 builder.Services.AddGrpcHealthChecks()
     .AddDbContextCheck<LendingDbContext>("database");
 
+var reflectionEnabled = builder.Configuration.GetValue<bool?>("Grpc:Reflection") ?? builder.Environment.IsDevelopment();
+if (reflectionEnabled)
+{
+    builder.Services.AddGrpcReflection();
+}
+
 builder.Services.AddLendingApplication();
 builder.Services.Configure<LendingOptions>(builder.Configuration.GetSection(LendingOptions.SectionName));
 builder.Services.AddLendingInfrastructure(builder.Configuration);

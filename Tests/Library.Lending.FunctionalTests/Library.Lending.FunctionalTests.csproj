@@ -4,4 +4,8 @@
     <ProjectReference Include="../../Library.Lending.Grpc/Library.Lending.Grpc.csproj" />
     <ProjectReference Include="../Library.TestSupport/Library.TestSupport.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Grpc.Reflection" />
+  </ItemGroup>
 </Project>
