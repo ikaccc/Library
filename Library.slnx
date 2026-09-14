@@ -11,6 +11,7 @@
     <Project Path="Tests/Library.Lending.FunctionalTests/Library.Lending.FunctionalTests.csproj" />
     <Project Path="Tests/Library.Lending.IntegrationTests/Library.Lending.IntegrationTests.csproj" />
     <Project Path="Tests/Library.Lending.UnitTests/Library.Lending.UnitTests.csproj" />
+    <Project Path="Tests/Library.SystemTests/Library.SystemTests.csproj" />
     <Project Path="Tests/Library.TestSupport/Library.TestSupport.csproj" />
     <Project Path="Tests/Library.Warmup.Tests/Library.Warmup.Tests.csproj" />
   </Folder>

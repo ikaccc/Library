@@ -2,7 +2,7 @@
 # and the Aspire dashboard for traces, metrics and logs.
 #   docker compose up --build
 # API docs: http://localhost:8080/scalar | Dashboard: http://localhost:18888
-# gRPC: localhost:5001 (h2c) | PostgreSQL: localhost:543
+# gRPC: localhost:5001 (h2c) | PostgreSQL: localhost:5433
 
 name: library
 

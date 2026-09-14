@@ -1,0 +1,7 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="../../Library.Api/Library.Api.csproj" />
+    <ProjectReference Include="../../Library.Lending.Grpc/Library.Lending.Grpc.csproj" />
+    <ProjectReference Include="../Library.TestSupport/Library.TestSupport.csproj" />
+  </ItemGroup>
+</Project>

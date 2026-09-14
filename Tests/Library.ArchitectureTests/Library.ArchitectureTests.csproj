@@ -1,4 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
-
+  <ItemGroup>
+    <ProjectReference Include="../../Library.Api/Library.Api.csproj" />
+    <ProjectReference Include="../../Library.Lending.Application/Library.Lending.Application.csproj" />
+    <ProjectReference Include="../../Library.Lending.Contracts/Library.Lending.Contracts.csproj" />
+    <ProjectReference Include="../../Library.Lending.Domain/Library.Lending.Domain.csproj" />
+    <ProjectReference Include="../../Library.Lending.Grpc/Library.Lending.Grpc.csproj" />
+    <ProjectReference Include="../../Library.Lending.Infrastructure/Library.Lending.Infrastructure.csproj" />
+  </ItemGroup>
 </Project>
