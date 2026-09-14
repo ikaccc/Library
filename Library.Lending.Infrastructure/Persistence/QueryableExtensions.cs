@@ -11,13 +11,20 @@ internal static class QueryableExtensions
         int pageSize,
         CancellationToken cancellationToken)
     {
-        var totalCount = await query.CountAsync(cancellationToken);
-        var items = totalCount == 0
-            ? []
-            : await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync(cancellationToken);
+        var rows = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Select(item => new PageRow<T>(item, query.Count()))
+            .ToListAsync(cancellationToken);
 
-        return new PagedResult<T>(items, page, pageSize, totalCount);
+        var totalCount = rows.Count > 0
+            ? rows[0].TotalCount
+            : await query.CountAsync(cancellationToken);
+
+        return new PagedResult<T>(rows.Select(row => row.Item).ToList(), page, pageSize, totalCount);
     }
+
+    private sealed record PageRow<T>(T Item, int TotalCount);
 }
 
 internal static class LikePatterns

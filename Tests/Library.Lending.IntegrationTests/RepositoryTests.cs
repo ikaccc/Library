@@ -6,6 +6,7 @@ using Library.Lending.Domain.Books;
 using Library.Lending.Infrastructure.Persistence.Repositories;
 using Library.TestSupport;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace Library.Lending.IntegrationTests;
 
@@ -138,9 +139,38 @@ public class RepositoryTests(PostgresContainerFixture postgres) : IAsyncLifetime
         (await Ids(new LoanFilter(null, null, null, now))).Count().ShouldBe(4);
     }
 
-    /// <summary>Thin wrapper so the test reads like the application code that uses the unit of work.</summary>
-    private sealed class EfUnitOfWorkProxy(Library.Lending.Infrastructure.Persistence.LendingDbContext db)
+    [Fact]
+    public async Task Paging_fetches_items_and_total_in_one_round_trip()
     {
-        public Task SaveChangesAsync() => new Library.Lending.Infrastructure.Persistence.EfUnitOfWork(db).SaveChangesAsync(CancellationToken.None);
+        await using (var db = _database.CreateContext())
+        {
+            db.Books.AddRange(Enumerable.Range(1, 5).Select(i => TestData.NewBook($"Title {i:D2}")));
+            await db.SaveChangesAsync();
+        }
+
+        var executedCommands = new List<string>();
+        var options = new DbContextOptionsBuilder<Infrastructure.Persistence.LendingDbContext>();
+        Infrastructure.Persistence.LendingDbContextOptions.Configure(options, _database.ConnectionString);
+        options.LogTo(executedCommands.Add, [RelationalEventId.CommandExecuted]);
+        await using var reader = new Infrastructure.Persistence.LendingDbContext(options.Options);
+        var repository = new BookRepository(reader);
+
+        var firstPage = await repository.ListAsync(null, page: 1, pageSize: 2, CancellationToken.None);
+        firstPage.Items.Count.ShouldBe(2);
+        firstPage.TotalCount.ShouldBe(5);
+        executedCommands.Count.ShouldBe(1, "a populated page must not need a separate count query");
+
+        executedCommands.Clear();
+        var pastTheEnd = await repository.ListAsync(null, page: 4, pageSize: 2, CancellationToken.None);
+        pastTheEnd.Items.ShouldBeEmpty();
+        pastTheEnd.TotalCount.ShouldBe(5, "an empty page still reports the real total");
+        pastTheEnd.TotalPages.ShouldBe(3);
+        executedCommands.Count.ShouldBe(2, "only a page past the end pays for a second query");
+    }
+
+    /// <summary>Thin wrapper so the test reads like the application code that uses the unit of work.</summary>
+    private sealed class EfUnitOfWorkProxy(Infrastructure.Persistence.LendingDbContext db)
+    {
+        public Task SaveChangesAsync() => new Infrastructure.Persistence.EfUnitOfWork(db).SaveChangesAsync(CancellationToken.None);
     }
 }
