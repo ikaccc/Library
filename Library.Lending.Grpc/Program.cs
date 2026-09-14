@@ -38,6 +38,10 @@ app.MapGrpcService<BorrowersGrpcService>();
 app.MapGrpcService<LoansGrpcService>();
 app.MapGrpcService<AnalyticsGrpcService>();
 app.MapGrpcHealthChecksService();
+if (reflectionEnabled)
+{
+    app.MapGrpcReflectionService();
+}
 app.MapHealthChecks("/health");
 app.MapGet("/", () => "Library Lending gRPC service (library.lending.v1). Talk to it with a gRPC client; HTTP health lives at /health.");
 
