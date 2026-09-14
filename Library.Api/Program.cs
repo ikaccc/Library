@@ -3,6 +3,8 @@ using Library.Api;
 using Library.Api.Endpoints;
 using Library.Api.Errors;
 using Library.Api.Grpc;
+using Library.Api.RateLimiting;
+
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -20,6 +22,7 @@ builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<RpcExceptionHandler>();
 builder.Services.AddOpenApi("v1");
 
+builder.Services.AddClientRateLimiting(builder.Configuration);
 builder.Services.AddLendingServiceClients(builder.Configuration);
 builder.Services.AddHealthChecks()
     .AddCheck<LendingServiceHealthCheck>("lending-service");
@@ -29,6 +32,7 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 app.UseExceptionHandler();
 app.UseStatusCodePages();
+app.UseRateLimiter();
 
 app.MapOpenApi();
 app.MapScalarApiReference(options => options.WithTitle("Library API"));
@@ -40,7 +44,7 @@ v1.MapBorrowers();
 v1.MapLoans();
 v1.MapAnalytics();
 
-app.MapHealthChecks("/health");
-app.MapHealthChecks("/health/live", new() { Predicate = _ => false });
+app.MapHealthChecks("/health").DisableRateLimiting();
+app.MapHealthChecks("/health/live", new() { Predicate = _ => false }).DisableRateLimiting();
 
 await app.RunAsync();

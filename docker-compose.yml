@@ -44,6 +44,7 @@ services:
       Otel__Endpoint: http://aspire-dashboard:18889
       Otel__ServiceName: Library.Lending.Grpc
       Otel__ServiceVersion: 1.0.0
+      Grps__Reflection: "true"
     ports:
       - "${LENDING_GRPC_PORT:-5001}:5001"
       - "${LENDING_HTTP_PORT:-5002}:5002"
@@ -70,6 +71,8 @@ services:
       Otel__Endpoint: http://aspire-dashboard:18889
       Otel__ServiceName: Library.Api
       Otel__ServiceVersion: 1.0.0
+      RateLimiting__PermitLimit: 100
+      RateLimiting__Window: 00:00:10
     ports:
       - "${API_PORT:-8080}:8080"
     depends_on:
