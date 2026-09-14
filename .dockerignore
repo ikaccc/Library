@@ -1,0 +1,13 @@
+**/bin/
+**/obj/
+artifacts/
+.git/
+.github/
+.idea/
+.vs/
+.vscode/
+tests/
+docs/
+**/*.md
+**/*.http
+docker-compose*.yml
