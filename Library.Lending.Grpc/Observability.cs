@@ -1,5 +1,6 @@
 using Npgsql;
 using OpenTelemetry;
+using OpenTelemetry.Exporter;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
@@ -9,8 +10,6 @@ namespace Library.Lending.Grpc;
 
 internal static class Observability
 {
-    public const string ServiceName = "library-lending";
-
     public static IHostApplicationBuilder AddObservability(this IHostApplicationBuilder builder)
     {
         var version = typeof(Observability).Assembly.GetName().Version?.ToString(3) ?? "0.0.0";
@@ -22,7 +21,7 @@ internal static class Observability
         });
 
         var openTelemetry = builder.Services.AddOpenTelemetry()
-            .ConfigureResource(resource => resource.AddService(ServiceName, serviceVersion: version))
+            .ConfigureResource(resource => resource.AddService(builder.Configuration["Otel:ServiceName"] ?? "Unknown", serviceVersion: version))
             .WithMetrics(metrics => metrics
                 .AddAspNetCoreInstrumentation()
                 .AddHttpClientInstrumentation()
@@ -32,9 +31,9 @@ internal static class Observability
                 .AddHttpClientInstrumentation()
                 .AddNpgsql());
 
-        if (!string.IsNullOrWhiteSpace(builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]))
+        if (Uri.TryCreate(builder.Configuration["Otel:Endpoint"], UriKind.Absolute, out var endpoint))
         {
-            openTelemetry.UseOtlpExporter();
+            openTelemetry.UseOtlpExporter(OtlpExportProtocol.Grpc, endpoint);
         }
 
         return builder;
