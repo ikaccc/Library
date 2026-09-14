@@ -1,4 +1,5 @@
 using OpenTelemetry;
+using OpenTelemetry.Exporter;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
@@ -28,9 +29,9 @@ internal static class Observability
                 .AddAspNetCoreInstrumentation()
                 .AddHttpClientInstrumentation());
 
-        if (!string.IsNullOrWhiteSpace(builder.Configuration["Otel:Endpoint"]))
+        if (Uri.TryCreate(builder.Configuration["Otel:Endpoint"], UriKind.Absolute, out var endpoint))
         {
-            openTelemetry.UseOtlpExporter();
+            openTelemetry.UseOtlpExporter(OtlpExportProtocol.Grpc, endpoint);
         }
 
         return builder;
