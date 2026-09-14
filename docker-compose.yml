@@ -1,0 +1,88 @@
+# Runs the whole system: PostgreSQL, the Lending gRPC service, the public HTTP API
+# and the Aspire dashboard for traces, metrics and logs.
+#   docker compose up --build
+# API docs: http://localhost:8080/scalar | Dashboard: http://localhost:18888
+# gRPC: localhost:5001 (h2c) | PostgreSQL: localhost:543
+
+name: library
+
+services:
+  postgres:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_DB: library
+      POSTGRES_USER: library
+      POSTGRES_PASSWORD: library
+    ports:
+      - "${POSTGRES_PORT:-5433}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U library -d library"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+  aspire-dashboard:
+    image: mcr.microsoft.com/dotnet/aspire-dashboard:13.2
+    environment:
+      DOTNET_DASHBOARD_UNSECURED_ALLOW_ANONYMOUS: "true"
+    ports:
+      - "${DASHBOARD_PORT:-18888}:18888"
+
+  lending:
+    build:
+      context: .
+      dockerfile: Library.Lending.Grpc/Dockerfile
+    image: library/lending:1.0.0
+    environment:
+      ConnectionStrings__Lending: Host=postgres;Port=5432;Database=library;Username=library;Password=library
+      Database__MigrateOnStartup: "true"
+      Database__SeedOnStartup: "true"
+      Kestrel__Endpoints__Grpc__Url: http://0.0.0.0:5001
+      Kestrel__Endpoints__Http__Url: http://0.0.0.0:5002
+      Otel__Endpoint: http://aspire-dashboard:18889
+      Otel__ServiceName: Library.Lending.Grpc
+      Otel__ServiceVersion: 1.0.0
+    ports:
+      - "${LENDING_GRPC_PORT:-5001}:5001"
+      - "${LENDING_HTTP_PORT:-5002}:5002"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      aspire-dashboard:
+        condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:5002/health || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 15s
+
+  api:
+    build:
+      context: .
+      dockerfile: Library.Api/Dockerfile
+    image: library/api:1.0.0
+    environment:
+      LendingService__Address: http://lending:5001
+      Kestrel__Endpoints__Http__Url: http://0.0.0.0:8080
+      Otel__Endpoint: http://aspire-dashboard:18889
+      Otel__ServiceName: Library.Api
+      Otel__ServiceVersion: 1.0.0
+    ports:
+      - "${API_PORT:-8080}:8080"
+    depends_on:
+      lending:
+        condition: service_healthy
+      aspire-dashboard:
+        condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/health/live || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 10s
+
+volumes:
+  postgres-data:
